@@ -55,7 +55,7 @@ class SPApp(QMainWindow, Ui_MainWindow):
         self.txtQueens.setText('8')
         self.txtRooks.setText('0')
         self.txtBishops.setText('0')
-        self.txtUnicorns.setText('0')
+        self.txtKnights.setText('0')
 
         self.ShowImage()
 
@@ -141,45 +141,62 @@ class SPApp(QMainWindow, Ui_MainWindow):
     # calls backend until solution is found
     def findSolution(self):
         
+        
         numIterations = int(self.txtIterations.text())
         desiredN = int(self.txtBoardSize.text())
         numQueens = int(self.txtQueens.text())
         numRooks = int(self.txtRooks.text())
         numBishops = int(self.txtBishops.text())
-        numUnicorns = int(self.txtUnicorns.text())
+        numKnights = int(self.txtKnights.text())
 
         # before loop seed generator
         #random.seed(454)
 
-        if desiredN > 0 and desiredN % 2 == 0 and desiredN != self.n:
+        # for now, only even numbers of N are supported due to board construction function
+        if desiredN > 0 and desiredN % 2 == 0:
             self.n = desiredN
             self.boardObject.changeSize(desiredN)
+        else:
+            QMessageBox.about(self, "Error", "Sorry, this beta version does not support those parameters.")
+            return
 
-        conflictsList = [1]*self.n
-
-        pl = []
-        qind = -1
-        for i in range(self.n):
-            for j in range(self.n):
-                qind+=1
-                if qind < numQueens:
-                    pl.append(('queen',i,j))
+        # make a dictionary of chess pieces we are potentially going to use
+        piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
 
 
+        pl = [] # pieces list that is actually used for the solver
+        totalPieces=-1
+
+        # add the pieces to the list
+        for pc in piecesNumbers:
+            for _ in range(piecesNumbers[pc]):
+                totalPieces+=1
+                row = int(totalPieces / self.n)
+                col = int(totalPieces % self.n)
+
+                pl.append((pc,row,col))
+
+
+        # run solver for designated number of iterations until we find a solution or bust
         for iter in range(numIterations):
             
-            pl, conflictsList, solFound = minConflicts(pl, self.n, conflictsList)
+            # run the solver for one iteration
+            pl, solFound = minConflicts(pl, self.n)
 
+            # if a solution is found, alert the user
             if solFound:
-                QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations"%(iter+1))
                 self.boardObject.fillBoard(pl)
                 self.ShowImage(False)
+                QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations"%(iter+1))
                 break
 
-            if iter % 10 == 0:
+            if iter % 5 == 0:
                 self.boardObject.fillBoard(pl)
                 self.ShowImage(False)
-                #print(conflictList)
+
+
+        if iter == numIterations-1:
+            QMessageBox.about(self, "Bummer", "No solution found!")
 
 
 
@@ -189,7 +206,7 @@ class playingBoard():
 
     def __init__(self, square, n):
 
-        self.piecesNames = ['queen', 'rook', 'bishop','knight','unicorn']
+        self.piecesNames = ['queen', 'rook', 'bishop','knight']
         self.pieces = {}
         self.square = square
         self.n = n

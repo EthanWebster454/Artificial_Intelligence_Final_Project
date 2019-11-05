@@ -1,29 +1,51 @@
 import random as rand
+import numpy as np
 
 
-def minConflicts(board, n, cl):
+def minConflicts(board, n):
 
-    # quick n dirty: fix this later...
+    numPieces = len(board)
+
+    cl=[None]*numPieces
+
+    # for ease of access, make a matrix that details the board layout
+    boardMatrix = np.zeros((n,n),dtype=bool)
+
+
+    # update conflicts and board layout matrix
+    for ki in range(numPieces):
+        _,k,l = board[ki]
+        boardMatrix[k,l] = True
+        cl[ki] = findConflicts(board, ki, (k,l), numPieces)
+
+
+    # see if the current layout is a solution
+    if all(ncf==0 for ncf in cl):
+        return board, True
+
+
+    # choose a random piece with conflicts
     while (True):
-        ri = rand.randint(0,n-1)
+        ri = rand.randint(0,numPieces-1)
         if cl[ri] > 0:
             break
 
-    
+    # obtain the randomly chosen piece
     (pieceName,x,y) = board[ri]
 
-    currConflicts = []
-
+    # find the conflicts for all the pieces on the board
+    currConflicts = [(cl[ri],(x,y))]
     for i in range(n):
-        if i != x:
-            cc = (i,y)
-            currConflicts.append((findConflicts(board, ri, (i,y), n), cc))
+        for j in range(n):
+            if not boardMatrix[i,j] and (i,j) != (x,y):
+                currConflicts.append((findConflicts(board, ri, (i,j), numPieces), (i,j)))
 
     (minC,coords) = min(currConflicts, key=first)
 
-    # maybe change to <= to prevent pieces from being too "rooted" in place
+    # check to see if there is a move that grants fewer or equal conflicts
+    # if so, randomly break ties and update the conflict list
     if minC <= cl[ri]:
-
+        
         shortConflictsList = [t for t in currConflicts if t[0] == minC]
         numCL = len(shortConflictsList)
         if numCL > 1:
@@ -33,37 +55,35 @@ def minConflicts(board, n, cl):
 
         board[ri] = (pieceName, newC[1][0], newC[1][1])
 
-        cl[ri] = minC
-
-
-    # update conflicts
-    for ki in range(n):
-        pieceN,k,l = board[ki]
-        cl[ki] = findConflicts(board, ki, (k,l), n)
-
-
-    if all(ncf==0 for ncf in cl):
-        return board, cl, True
     
-    return board, cl, False
+    return board, False
 
 
 
 
-
-
-# only finds conflicts for queen so far
+# finds conflicts for all pieces on the board excluding current piece
 def findConflicts(board, exclude, c, n):
 
     directions=[]
     conflicts = 0
+    myName = board[exclude][0]
 
     x, y = c
 
+    # this part checks for pieces that can attack the current one
+    # then checks to see what pieces the current one can attack
     for unit in range(n):
         if unit != exclude:
-            (_,i,j) = board[unit]
-            d = findDirection(x,y,i,j)
+            (currName,i,j) = board[unit]
+
+            # check for attack from other piece
+            d = findDirection(x,y,i,j,currName)
+            if d and d not in directions:
+                directions.append(d)
+                conflicts+=1
+
+            # check if current piece can attack this one
+            d = findDirection(x,y,i,j,myName)
             if d and d not in directions:
                 directions.append(d)
                 conflicts+=1
@@ -72,18 +92,34 @@ def findConflicts(board, exclude, c, n):
 
     
 
-def findDirection(x,y,i,j):
+# this finds the direction of attack between two pieces if one exists
+def findDirection(x,y,i,j,pn):
 
-    if x == i:
-        return 1
-    elif y == j:
-        return 2
-    elif x - i == y - j:
-        return 3
-    elif abs(x-i) == abs(y-j):
-        return 4
-    else: 
-        return False
+    if pn == 'queen':
+        if x == i:
+            return 1
+        elif y == j:
+            return 2
+        elif x - i == y - j:
+            return 3
+        elif abs(x-i) == abs(y-j):
+            return 4
+        else:
+            return False
+    elif pn == 'rook':
+        if x == i:
+            return 1
+        elif y == j:
+            return 2
+        else:
+            return False
+    elif pn == 'bishop':
+        if x - i == y - j:
+            return 3
+        elif abs(x-i) == abs(y-j):
+            return 4
+        else:
+            return False
 
 
 def first(a):

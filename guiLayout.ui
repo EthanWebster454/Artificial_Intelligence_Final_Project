@@ -173,7 +173,7 @@
      <string>Solve</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="txtUnicorns">
+   <widget class="QLineEdit" name="txtKnights">
     <property name="geometry">
      <rect>
       <x>930</x>
@@ -201,7 +201,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Unicorns</string>
+     <string>Knights</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btnReset">
