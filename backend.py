@@ -120,6 +120,24 @@ def findDirection(x,y,i,j,pn):
             return 4
         else:
             return False
+    elif pn == 'knight':
+        if x-1==i and y-2==j:
+            return 5
+        elif x-1==i and y+2==j:
+            return 6
+        elif x+1==i and y-2==j:
+            return 7
+        elif x+1==i and y+2==j:
+            return 8
+        elif x-2==i and y-1==j:
+            return 9
+        elif x-2==i and y+1==j:
+            return 10
+        elif x+2==i and y-1==j:
+            return 11
+        elif x+2==i and y+1==j:
+            return 12
+            
 
 
 def first(a):
