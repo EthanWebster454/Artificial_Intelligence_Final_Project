@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QFileDia
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PIL import Image
 import numpy as np
+import ctypes
 import cv2
 import matplotlib.pyplot as plt
 from backend import minConflicts
@@ -40,8 +41,13 @@ class SPApp(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
 
+
+        
         QMainWindow.__init__(self)
+        
         Ui_MainWindow.__init__(self)
+
+        self.setWindowIcon(QIcon('images/Chess-icon.png'))
 
         self.boardObject = playingBoard(self.boardDim,self.n)
 
@@ -141,7 +147,7 @@ class SPApp(QMainWindow, Ui_MainWindow):
     # calls backend until solution is found
     def findSolution(self):
         
-        
+
         numIterations = int(self.txtIterations.text())
         desiredN = int(self.txtBoardSize.text())
         numQueens = int(self.txtQueens.text())
@@ -277,6 +283,10 @@ class playingBoard():
 
 
 if __name__ == "__main__":
+
+
+    myappid = 'CSI535.ChessSolver.1.0'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     app = QApplication(sys.argv)
     window = SPApp()
     window.show()
