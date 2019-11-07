@@ -65,6 +65,8 @@ class SPApp(QMainWindow, Ui_MainWindow):
 
         self.ShowImage()
 
+        self.foundSolution = False
+
         #self.lblImg.resize(self.imglbl_width, self.imglbl_height)
         #self.lblImg.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -143,11 +145,13 @@ class SPApp(QMainWindow, Ui_MainWindow):
         except:
             QMessageBox.about(self, "Error", "Cannot save file. Please try again.")
 
+    def getCurrentBoardSize(self, startingN, increased):
+        return startingN + increased*2
 
+            
     # calls backend until solution is found
     def findSolution(self):
         
-
         numIterations = int(self.txtIterations.text())
         desiredN = int(self.txtBoardSize.text())
         numQueens = int(self.txtQueens.text())
@@ -162,47 +166,85 @@ class SPApp(QMainWindow, Ui_MainWindow):
         if desiredN > 0 and desiredN % 2 == 0:
             self.n = desiredN
             self.boardObject.changeSize(desiredN)
+            # make a dictionary of chess pieces we are potentially going to use
+            piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
+
+
+            pl = [] # pieces list that is actually used for the solver
+            totalPieces=-1
+
+            # add the pieces to the list
+            for pc in piecesNumbers:
+                for _ in range(piecesNumbers[pc]):
+                    totalPieces+=1
+                    row = int(totalPieces / self.n)
+                    col = int(totalPieces % self.n)
+
+                    pl.append((pc,row,col))
+
+
+            # run solver for designated number of iterations until we find a solution or bust
+            for iter in range(numIterations):
+                
+                # run the solver for one iteration
+                pl, solFound = minConflicts(pl, self.n)
+
+                # if a solution is found, alert the user
+                if solFound:
+                    self.boardObject.fillBoard(pl)
+                    self.ShowImage(False)
+                    QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations"%(iter+1))
+                    break
+
+                if iter % 5 == 0:
+                    self.boardObject.fillBoard(pl)
+                    self.ShowImage(False)
+
+
+            if iter == numIterations-1:
+                QMessageBox.about(self, "Bummer", "No solution found!")
+        elif desiredN ==0:
+            piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
+            numberOfPieces = numQueens+numRooks+numBishops+numKnights
+            self.n = 2 #start with 2x2 board
+            while self.n*self.n < numberOfPieces: #increase size until all pieces can fit
+                self.n += 2 #need to figure out odd sized boards
+            boardMaxIncrease = int((numberOfPieces+numberOfPieces%2 - self.n)/2) #divided by 2 to only use even sized boards
+            found=False
+            for boardsize in range(boardMaxIncrease+1):
+                pl=[]
+                piecesPlaced = -1
+                self.boardObject.changeSize(self.getCurrentBoardSize(self.n,boardsize))
+                for pc in piecesNumbers:
+                    for _ in range(piecesNumbers[pc]):
+                        piecesPlaced+=1
+                        row = int(piecesPlaced / self.n)
+                        col = int(piecesPlaced % self.n)
+
+                        pl.append((pc,row,col))
+                for iter in range(numIterations):
+                    
+                    # run the solver for one iteration
+                    pl, solFound = minConflicts(pl, self.getCurrentBoardSize(self.n,boardsize))
+                    
+
+                    # if a solution is found, alert the user
+                    if solFound:
+                        self.boardObject.fillBoard(pl)
+                        self.ShowImage(False)
+                        QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations"%((numIterations*boardsize)+iter+1))
+                        return
+                        
+
+                    if iter % 50 == 0:
+                        print(self.getCurrentBoardSize(self.n,boardsize),iter)
+                        self.boardObject.fillBoard(pl)
+                        self.ShowImage(False)
         else:
             QMessageBox.about(self, "Error", "Sorry, this beta version does not support those parameters.")
             return
 
-        # make a dictionary of chess pieces we are potentially going to use
-        piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
-
-
-        pl = [] # pieces list that is actually used for the solver
-        totalPieces=-1
-
-        # add the pieces to the list
-        for pc in piecesNumbers:
-            for _ in range(piecesNumbers[pc]):
-                totalPieces+=1
-                row = int(totalPieces / self.n)
-                col = int(totalPieces % self.n)
-
-                pl.append((pc,row,col))
-
-
-        # run solver for designated number of iterations until we find a solution or bust
-        for iter in range(numIterations):
-            
-            # run the solver for one iteration
-            pl, solFound = minConflicts(pl, self.n)
-
-            # if a solution is found, alert the user
-            if solFound:
-                self.boardObject.fillBoard(pl)
-                self.ShowImage(False)
-                QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations"%(iter+1))
-                break
-
-            if iter % 5 == 0:
-                self.boardObject.fillBoard(pl)
-                self.ShowImage(False)
-
-
-        if iter == numIterations-1:
-            QMessageBox.about(self, "Bummer", "No solution found!")
+        
 
 
 
