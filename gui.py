@@ -145,10 +145,6 @@ class SPApp(QMainWindow, Ui_MainWindow):
         except:
             QMessageBox.about(self, "Error", "Cannot save file. Please try again.")
 
-    def getCurrentBoardSize(self, startingN, increased):
-        return startingN + increased*2
-
-            
     # calls backend until solution is found
     def findSolution(self):
         
@@ -162,8 +158,7 @@ class SPApp(QMainWindow, Ui_MainWindow):
         # before loop seed generator
         #random.seed(454)
 
-        # for now, only even numbers of N are supported due to board construction function
-        if desiredN > 0 and desiredN % 2 == 0:
+        if desiredN > 0:
             self.n = desiredN
             self.boardObject.changeSize(desiredN)
             # make a dictionary of chess pieces we are potentially going to use
@@ -196,7 +191,7 @@ class SPApp(QMainWindow, Ui_MainWindow):
                     QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations"%(iter+1))
                     break
 
-                if iter % 5 == 0:
+                if iter % 50 == 0:
                     self.boardObject.fillBoard(pl)
                     self.ShowImage(False)
 
@@ -206,15 +201,16 @@ class SPApp(QMainWindow, Ui_MainWindow):
         elif desiredN ==0:
             piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
             numberOfPieces = numQueens+numRooks+numBishops+numKnights
-            self.n = 2 #start with 2x2 board
+            self.n = 1 #start with 1x1 board
             while self.n*self.n < numberOfPieces: #increase size until all pieces can fit
-                self.n += 2 #need to figure out odd sized boards
-            boardMaxIncrease = int((numberOfPieces+numberOfPieces%2 - self.n)/2) #divided by 2 to only use even sized boards
+                self.n += 1
+            boardMaxIncrease = numberOfPieces - self.n
             found=False
             for boardsize in range(boardMaxIncrease+1):
+                print('Checking size: ',boardsize+self.n)
                 pl=[]
                 piecesPlaced = -1
-                self.boardObject.changeSize(self.getCurrentBoardSize(self.n,boardsize))
+                self.boardObject.changeSize(self.n+boardsize)
                 for pc in piecesNumbers:
                     for _ in range(piecesNumbers[pc]):
                         piecesPlaced+=1
@@ -225,9 +221,9 @@ class SPApp(QMainWindow, Ui_MainWindow):
                 for iter in range(numIterations):
                     
                     # run the solver for one iteration
-                    pl, solFound = minConflicts(pl, self.getCurrentBoardSize(self.n,boardsize))
+                    pl, solFound = minConflicts(pl, self.n+boardsize)
                     
-
+                    
                     # if a solution is found, alert the user
                     if solFound:
                         self.boardObject.fillBoard(pl)
@@ -236,10 +232,10 @@ class SPApp(QMainWindow, Ui_MainWindow):
                         return
                         
 
-                    if iter % 50 == 0:
-                        print(self.getCurrentBoardSize(self.n,boardsize),iter)
-                        self.boardObject.fillBoard(pl)
-                        self.ShowImage(False)
+                    #if iter % 50 == 0:
+                        #self.boardObject.fillBoard(pl)
+                        #self.ShowImage(False)
+                
         else:
             QMessageBox.about(self, "Error", "Sorry, this beta version does not support those parameters.")
             return
@@ -295,9 +291,17 @@ class playingBoard():
         n = self.n
         step = int(self.square/n)
         halfDim = int(n/2)
-
-        self.board = np.kron([[1, 0] * halfDim, [0, 1] * halfDim] * halfDim, np.full((step, step), 255))
-
+        if n%2==0:
+            self.board = np.kron([[1, 0] * halfDim, [0, 1] * halfDim] * halfDim, np.full((step, step), 255))
+        else:
+            first = [1,0]*halfDim
+            first.append(1)
+            second = [0,1]*halfDim
+            second.append(0)
+            third = [first,second]*halfDim
+            third.append(first)
+            self.board = np.kron(third, np.full((step, step), 255))
+            #[first, second] * (halfDim+1)
 
     def placePiece(self, name, x, y):
 
