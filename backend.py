@@ -3,6 +3,7 @@ import numpy as np
 
 
 def minConflicts(board, n):
+    
 
     numPieces = len(board)
 
@@ -17,7 +18,6 @@ def minConflicts(board, n):
         _,k,l = board[ki]
         boardMatrix[k,l] = True
         cl[ki] = findConflicts(board, ki, (k,l), numPieces)
-
 
     # see if the current layout is a solution
     if all(ncf==0 for ncf in cl):
