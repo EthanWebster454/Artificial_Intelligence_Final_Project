@@ -158,7 +158,87 @@ class SPApp(QMainWindow, Ui_MainWindow):
         # before loop seed generator
         #random.seed(454)
 
+<<<<<<< Updated upstream
         if desiredN > 0:
+=======
+        if numIterations == 0:
+            numIterations = 1000
+            countIter = 0
+            guesses = -1
+            piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
+            numberOfPieces = numQueens+numRooks+numBishops+numKnights
+            #self.n = self.GetHValue(numQueens,numRooks,numBishops,numKnights) #start with 1x1 board
+            self.n = math.ceil(float(numQueens)*1.01+float(numRooks)*1.0+float(numBishops)*.4+float(numKnights)*.2)
+            boardMaxIncrease = numberOfPieces - self.n
+            pl=[]
+            piecesPlaced = -1
+            self.boardObject.changeSize(self.n)
+            print('Checking size: ',self.n)
+            for pc in piecesNumbers:
+                for _ in range(piecesNumbers[pc]):
+                    piecesPlaced+=1
+                    row = int(piecesPlaced / self.n)
+                    col = int(piecesPlaced % self.n)
+                    pl.append((pc,row,col))
+            for iter in range(numIterations):
+                countIter += 1
+                # run the solver for one iteration                
+                pl, solFound = minConflicts(pl, self.n)
+                # if a solution is found, alert the user
+                if solFound:
+                    break
+            if solFound: #Board is too big
+                for boardsize in range(1,numberOfPieces):
+                    guesses += 1
+                    lastSuccess = pl.copy()
+                    print('Checking size: ',self.n-boardsize)
+                    pl=[]
+                    piecesPlaced = -1
+                    self.boardObject.changeSize(self.n-boardsize)
+                    for pc in piecesNumbers:
+                        for _ in range(piecesNumbers[pc]):
+                            piecesPlaced+=1
+                            row = int(piecesPlaced / (self.n-boardsize))
+                            col = int(piecesPlaced % (self.n-boardsize))
+                            pl.append((pc,row,col))
+                    for iter in range(numIterations):                        
+                        # run the solver for one iteration
+                        countIter+=1
+                        pl, solFound = minConflicts(pl, self.n-boardsize)
+                        if solFound:
+                            break
+                    if not solFound: #Found minimum size
+                        self.boardObject.changeSize(self.n-boardsize+1)
+                        self.boardObject.fillBoard(lastSuccess)
+                        self.ShowImage(False)
+                        QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations. Heuristic was off by %s"%(countIter,guesses))
+                        return
+            else: #Board is too small                
+                for boardsize in range(1,boardMaxIncrease+1):
+                    guesses += 1
+                    print('Checking size: ',boardsize+self.n)
+                    pl=[]
+                    piecesPlaced = -1
+                    self.boardObject.changeSize(self.n+boardsize)
+                    for pc in piecesNumbers:
+                        for _ in range(piecesNumbers[pc]):
+                            piecesPlaced+=1
+                            row = int(piecesPlaced / self.n)
+                            col = int(piecesPlaced % self.n)
+                            pl.append((pc,row,col))
+                    for iter in range(numIterations):                        
+                        # run the solver for one iteration
+                        countIter+=1
+                        pl, solFound = minConflicts(pl, self.n+boardsize)  
+                        # if a solution is found, alert the user
+                        if solFound:
+                            self.boardObject.fillBoard(pl)
+                            self.ShowImage(False)
+                            QMessageBox.about(self, "Success", "Found a solution for the problem in %d iterations. Heuristic was off by %s"%(countIter,guesses))
+                            return
+                   
+        elif desiredN > 0:
+>>>>>>> Stashed changes
             self.n = desiredN
             self.boardObject.changeSize(desiredN)
             # make a dictionary of chess pieces we are potentially going to use
