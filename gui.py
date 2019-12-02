@@ -2,7 +2,7 @@
 # Name:        module1
 # Purpose:
 #
-# Author:      Ethan Webster
+# Author:      Ethan Webster & Steve Kassof
 #
 # Created:     12/05/2018
 # Copyright:   (c) Ethan Webster 2018
@@ -161,11 +161,11 @@ class SPApp(QMainWindow, Ui_MainWindow):
         #random.seed(454)
 
         if numIterations == 0:
-            numIterations = 300
+            numIterations = 1000
             piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
             numberOfPieces = numQueens+numRooks+numBishops+numKnights
             #self.n = self.GetHValue(numQueens,numRooks,numBishops,numKnights) #start with 1x1 board
-            self.n = math.ceil(float(numQueens)*1.01+float(numRooks)*1.0+float(numBishops)*.5+float(numKnights)*.3)
+            self.n = math.ceil(float(numQueens)*1.01+float(numRooks)*1.0+float(numBishops)*.4+float(numKnights)*.2)
             boardMaxIncrease = numberOfPieces - self.n
             pl=[]
             piecesPlaced = -1
