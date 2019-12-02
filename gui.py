@@ -19,6 +19,7 @@ import numpy as np
 import ctypes
 import cv2
 import matplotlib.pyplot as plt
+import math
 from backend import minConflicts
 
 
@@ -158,9 +159,6 @@ class SPApp(QMainWindow, Ui_MainWindow):
         # before loop seed generator
         #random.seed(454)
 
-<<<<<<< Updated upstream
-        if desiredN > 0:
-=======
         if numIterations == 0:
             numIterations = 1000
             countIter = 0
@@ -238,7 +236,6 @@ class SPApp(QMainWindow, Ui_MainWindow):
                             return
                    
         elif desiredN > 0:
->>>>>>> Stashed changes
             self.n = desiredN
             self.boardObject.changeSize(desiredN)
             # make a dictionary of chess pieces we are potentially going to use
