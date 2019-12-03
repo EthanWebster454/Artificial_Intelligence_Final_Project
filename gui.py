@@ -166,7 +166,8 @@ class SPApp(QMainWindow, Ui_MainWindow):
             piecesNumbers = {'queen': numQueens, 'rook':numRooks, 'bishop':numBishops, 'knight':numKnights}
             numberOfPieces = numQueens+numRooks+numBishops+numKnights
             #self.n = self.GetHValue(numQueens,numRooks,numBishops,numKnights) #start with 1x1 board
-            self.n = math.ceil(float(numQueens)*1.01+float(numRooks)*1.0+float(numBishops)*.4+float(numKnights)*.2)
+            #self.n = math.ceil(float(numQueens)*1.01+float(numRooks)*1.0+float(numBishops)*.4+float(numKnights)*.2)
+            self.n = math.ceil(float(numQueens)*1.0+float(numRooks)*1.0+float(numBishops)*.4+float(numKnights)*.2)
             boardMaxIncrease = numberOfPieces - self.n
             pl=[]
             piecesPlaced = -1
