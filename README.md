@@ -10,10 +10,15 @@ Coding Authors: Ethan Webster, Steven Kassof
 
 Contained Files:
 _pycache_ (folder): Required for backend
+
 images (folder): Contains the images necessary to show the gui
+
 results (folder): Contains pictures of sample results from earlier runs
+
 backend.py: Contains the min-conflict heuristic and other required computations
+
 gui.py: Builds the gui and directs the min-conflict heuristic
+
 guiLayout.ui: Required for gui
 
 
